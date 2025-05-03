@@ -3,71 +3,59 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-import openai
+from openai import OpenAI
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Load environment variables from .env
+# ——————————————————————————————————————————————————————————————————————————————
+# 1) Загрузите .env и ваш ключ
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
-# ──────────────────────────────────────────────────────────────────────────────
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise RuntimeError("Missing OPENAI_API_KEY in environment")
+# ——————————————————————————————————————————————————————————————————————————————
 
 app = FastAPI(
-    title="Advisor AI",
-    description="Универсальный AI-консультант и ассистент на основе GPT-4",
+    title="Advisor AI (GPT-4)",
+    description="Универсальный AI-консультант на базе GPT-4",
     version="1.0.0",
 )
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Serve all files under ./static (CSS, JS, images, index.html)
-# and enable default HTML responses for unknown routes
-app.mount(
-    "/static",
-    StaticFiles(directory="static", html=True),
-    name="static",
-)
-# ──────────────────────────────────────────────────────────────────────────────
+# 2) Статика и главная страница
+app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 
 @app.get("/", response_class=FileResponse)
 async def serve_index():
-    """
-    Return the main chat interface (static/index.html).
-    """
-    index_path = os.path.join("static", "index.html")
-    if not os.path.exists(index_path):
+    path = os.path.join("static", "index.html")
+    if not os.path.isfile(path):
         return JSONResponse({"error": "static/index.html not found"}, status_code=404)
-    return FileResponse(index_path, media_type="text/html")
+    return FileResponse(path, media_type="text/html")
 
+# 3) Инициализируем нового клиента OpenAI v1+
+#    Обратите внимание: НЕ используем openai.ChatCompletion
+client = OpenAI(api_key=api_key)
 
 @app.post("/chat")
-async def chat(request: Request):
+async def chat_endpoint(request: Request):
     """
-    Receive a JSON payload with {"message": "..."} and proxy it to OpenAI GPT-4,
-    then return {"reply": "..."}.
+    Ожидает JSON: {"message": "..."}
+    Возвращает JSON: {"reply": "..."}
     """
-    payload = await request.json()
-    user_message = payload.get("message", "").strip()
-
+    data = await request.json()
+    user_message = data.get("message", "").strip()
     if not user_message:
         return JSONResponse({"error": "Empty message"}, status_code=400)
 
     try:
-        completion = openai.ChatCompletion.create(
+        # Новый интерфейс openai-python v1+: client.chat.completions.create()
+        resp = client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "Ты — дружелюбный и компетентный AI-консультант Advisor. "
-                        "Отвечай чётко, информативно и по существу."
-                    )
-                },
-                {"role": "user", "content": user_message},
+                {"role": "system", "content": "Ты — компетентный AI-консультант Advisor. Отвечай по существу."},
+                {"role": "user",   "content": user_message},
             ],
             temperature=0.7,
             max_tokens=800,
         )
-        assistant_reply = completion.choices[0].message.content.strip()
-        return JSONResponse({"reply": assistant_reply})
+        reply = resp.choices[0].message.content.strip()
+        return JSONResponse({"reply": reply})
     except Exception as e:
-        # Log the exception if you have logging configured
-        return JSONResponse({"error": f"OpenAI API error: {str(e)}"}, status_code=500)
+        return JSONResponse({"error": f"OpenAI API error: {e}"}, status_code=500)

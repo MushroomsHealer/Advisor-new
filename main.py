@@ -1,35 +1,73 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from openai import OpenAI
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+import openai
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Load environment variables from .env
 load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY")
+# ──────────────────────────────────────────────────────────────────────────────
 
-app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="static")
+app = FastAPI(
+    title="Advisor AI",
+    description="Универсальный AI-консультант и ассистент на основе GPT-4",
+    version="1.0.0",
+)
 
-client = OpenAI(api_key=api_key)
+# ──────────────────────────────────────────────────────────────────────────────
+# Serve all files under ./static (CSS, JS, images, index.html)
+# and enable default HTML responses for unknown routes
+app.mount(
+    "/static",
+    StaticFiles(directory="static", html=True),
+    name="static",
+)
+# ──────────────────────────────────────────────────────────────────────────────
 
-@app.get("/", response_class=HTMLResponse)
-async def read_index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+@app.get("/", response_class=FileResponse)
+async def serve_index():
+    """
+    Return the main chat interface (static/index.html).
+    """
+    index_path = os.path.join("static", "index.html")
+    if not os.path.exists(index_path):
+        return JSONResponse({"error": "static/index.html not found"}, status_code=404)
+    return FileResponse(index_path, media_type="text/html")
+
 
 @app.post("/chat")
 async def chat(request: Request):
-    data = await request.json()
-    user_message = data.get("message", "")
+    """
+    Receive a JSON payload with {"message": "..."} and proxy it to OpenAI GPT-4,
+    then return {"reply": "..."}.
+    """
+    payload = await request.json()
+    user_message = payload.get("message", "").strip()
+
+    if not user_message:
+        return JSONResponse({"error": "Empty message"}, status_code=400)
+
     try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": user_message}],
-            max_tokens=800
+        completion = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Ты — дружелюбный и компетентный AI-консультант Advisor. "
+                        "Отвечай чётко, информативно и по существу."
+                    )
+                },
+                {"role": "user", "content": user_message},
+            ],
+            temperature=0.7,
+            max_tokens=800,
         )
-        reply = response.choices[0].message.content.strip()
-        return JSONResponse({"reply": reply})
+        assistant_reply = completion.choices[0].message.content.strip()
+        return JSONResponse({"reply": assistant_reply})
     except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
+        # Log the exception if you have logging configured
+        return JSONResponse({"error": f"OpenAI API error: {str(e)}"}, status_code=500)

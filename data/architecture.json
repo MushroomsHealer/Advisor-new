@@ -1,0 +1,84 @@
+{
+  "title": "Advisor AGI Architecture",
+  "overview": "Advisor AGI построен на принципах прозрачности, этичности и объяснимости искусственного интеллекта",
+  "core_principles": [
+    {
+      "title": "Структурированность",
+      "description": "Каждый ответ состоит из 4 блоков: Совет, Логика рассуждений, Этическая проверка, Самоанализ"
+    },
+    {
+      "title": "Прозрачность",
+      "description": "Пользователь видит весь процесс принятия решения AI, а не только финальный результат"
+    },
+    {
+      "title": "Этичность",
+      "description": "Каждый совет проходит этическую проверку на соответствие моральным принципам"
+    },
+    {
+      "title": "Самоанализ",
+      "description": "AI анализирует собственную уверенность и ограничения в каждом ответе"
+    }
+  ],
+  "technical_stack": {
+    "backend": {
+      "framework": "FastAPI",
+      "language": "Python 3.11",
+      "ai_model": "OpenAI GPT-4",
+      "database": "SQLite (MVP) → PostgreSQL (Production)",
+      "deployment": "Render.com"
+    },
+    "frontend": {
+      "framework": "React (планируется)",
+      "styling": "Tailwind CSS",
+      "current": "Vanilla HTML/CSS/JS"
+    },
+    "infrastructure": {
+      "hosting": "Render.com",
+      "monitoring": "Планируется",
+      "analytics": "Встроенная система обратной связи"
+    }
+  },
+  "data_flow": [
+    {
+      "step": 1,
+      "title": "Пользовательский запрос",
+      "description": "Пользователь отправляет вопрос через веб-интерфейс"
+    },
+    {
+      "step": 2,
+      "title": "Обработка запроса",
+      "description": "FastAPI получает запрос и передает его в AI-ядро"
+    },
+    {
+      "step": 3,
+      "title": "AI-анализ",
+      "description": "GPT-4 анализирует запрос с использованием специального промпта"
+    },
+    {
+      "step": 4,
+      "title": "Структурирование ответа",
+      "description": "AI формирует ответ в 4-блочной структуре"
+    },
+    {
+      "step": 5,
+      "title": "Возврат результата",
+      "description": "Структурированный ответ отправляется пользователю"
+    },
+    {
+      "step": 6,
+      "title": "Сбор обратной связи",
+      "description": "Пользователь может оценить качество совета"
+    }
+  ],
+  "security": {
+    "api_protection": "Rate limiting, CORS настройки",
+    "data_privacy": "Минимальный сбор персональных данных",
+    "key_management": "Безопасное хранение API ключей"
+  },
+  "scalability": {
+    "current": "Монолитная архитектура для MVP",
+    "future": "Микросервисная архитектура с плагин-системой",
+    "ai_evolution": "Поддержка кастомных reasoning модулей"
+  }
+}
+

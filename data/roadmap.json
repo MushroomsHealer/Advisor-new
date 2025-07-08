@@ -1,0 +1,67 @@
+{
+  "title": "Advisor AGI Roadmap 2025",
+  "phases": [
+    {
+      "id": "mvp",
+      "title": "MVP (Q1 2025)",
+      "status": "in_progress",
+      "description": "Базовая функциональность AI-консультанта",
+      "features": [
+        "Структурированные ответы (4 блока)",
+        "Система обратной связи",
+        "Базовый веб-интерфейс",
+        "OpenAI GPT-4 интеграция"
+      ],
+      "completion": 75
+    },
+    {
+      "id": "v2",
+      "title": "Version 2.0 (Q2 2025)",
+      "status": "planned",
+      "description": "Расширенная функциональность и улучшения UX",
+      "features": [
+        "Мультиязычная поддержка",
+        "Персонализация советов",
+        "Расширенная аналитика",
+        "Мобильное приложение",
+        "API для интеграций"
+      ],
+      "completion": 0
+    },
+    {
+      "id": "scaling",
+      "title": "Scaling (Q3-Q4 2025)",
+      "status": "planned",
+      "description": "Масштабирование и продвинутые возможности",
+      "features": [
+        "Плагин-система для reasoning модулей",
+        "DAO/Token механика",
+        "White-label решения",
+        "Telegram/Discord боты",
+        "Корпоративные интеграции"
+      ],
+      "completion": 0
+    },
+    {
+      "id": "agi",
+      "title": "AGI Evolution (2026+)",
+      "status": "research",
+      "description": "Развитие в сторону AGI/ASI",
+      "features": [
+        "Кастомные reasoning модули",
+        "Самообучающиеся алгоритмы",
+        "Мультимодальные возможности",
+        "Автономное принятие решений",
+        "Интеграция с IoT и робототехникой"
+      ],
+      "completion": 0
+    }
+  ],
+  "key_metrics": {
+    "target_users": "10,000+ активных пользователей к концу 2025",
+    "accuracy_goal": "95% удовлетворенности пользователей",
+    "response_time": "< 3 секунд для стандартных запросов",
+    "availability": "99.9% uptime"
+  }
+}
+

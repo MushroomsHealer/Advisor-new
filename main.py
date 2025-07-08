@@ -3,7 +3,6 @@ import json
 import sqlite3
 from datetime import datetime, timedelta
 from collections import defaultdict
-from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -12,8 +11,7 @@ from openai import OpenAI
 from pydantic import BaseModel
 
 # Загрузка переменных окружения
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.environ.get("OPENAI_API_KEY")
 if not api_key:
     raise RuntimeError("Missing OPENAI_API_KEY in environment")
 
@@ -70,9 +68,9 @@ def load_json_data(filename: str):
 
 # Инициализация базы данных
 def init_database():
-    conn = sqlite3.connect('advisor_feedback.db')
+    conn = sqlite3.connect("advisor_feedback.db")
     cursor = conn.cursor()
-    cursor.execute('''
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS feedback (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_message TEXT NOT NULL,
@@ -81,7 +79,7 @@ def init_database():
             comment TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-    ''')
+    """)
     conn.commit()
     conn.close()
 
@@ -187,12 +185,12 @@ async def ask_advisor(message: ChatMessage, request: Request):
 async def submit_feedback(feedback: FeedbackData):
     """Сохранение обратной связи"""
     try:
-        conn = sqlite3.connect('advisor_feedback.db')
+        conn = sqlite3.connect("advisor_feedback.db")
         cursor = conn.cursor()
-        cursor.execute('''
+        cursor.execute("""
             INSERT INTO feedback (user_message, advisor_response, rating, comment)
             VALUES (?, ?, ?, ?)
-        ''', (feedback.user_message, feedback.advisor_response, feedback.rating, feedback.comment))
+        """, (feedback.user_message, feedback.advisor_response, feedback.rating, feedback.comment))
         conn.commit()
         conn.close()
         
@@ -204,16 +202,16 @@ async def submit_feedback(feedback: FeedbackData):
 async def get_stats():
     """Статистика обратной связи"""
     try:
-        conn = sqlite3.connect('advisor_feedback.db')
+        conn = sqlite3.connect("advisor_feedback.db")
         cursor = conn.cursor()
         
-        cursor.execute('SELECT COUNT(*) FROM feedback')
+        cursor.execute("SELECT COUNT(*) FROM feedback")
         total_feedback = cursor.fetchone()[0]
         
-        cursor.execute('SELECT AVG(rating) FROM feedback WHERE rating IS NOT NULL')
+        cursor.execute("SELECT AVG(rating) FROM feedback WHERE rating IS NOT NULL")
         avg_rating = cursor.fetchone()[0] or 0
         
-        cursor.execute('SELECT COUNT(*) FROM feedback WHERE rating >= 4')
+        cursor.execute("SELECT COUNT(*) FROM feedback WHERE rating >= 4")
         positive_feedback = cursor.fetchone()[0]
         
         conn.close()
@@ -251,9 +249,9 @@ async def get_legal():
 async def health_check():
     """Проверка состояния системы"""
     try:
-        conn = sqlite3.connect('advisor_feedback.db')
+        conn = sqlite3.connect("advisor_feedback.db")
         cursor = conn.cursor()
-        cursor.execute('SELECT 1')
+        cursor.execute("SELECT 1")
         conn.close()
         
         data_files = ["roadmap.json", "user_stories.json", "architecture.json", "legal.json"]
@@ -307,4 +305,5 @@ async def api_info():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
 
